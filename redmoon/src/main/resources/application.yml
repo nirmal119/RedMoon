@@ -1,4 +1,8 @@
 spring:
+#  security:
+#    user:
+#      name: admin
+#      password: admin123
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/chatdb
     username: chat
@@ -25,3 +29,6 @@ spring:
 #expirationMinutes: 43200 # 30 days
 #media:
 #root: uploads
+
+#  spring.security.user.name=admin
+#  spring.security.user.password=admin123

@@ -14,7 +14,7 @@ public class User {
     private Long id;
 
     @Column(name = "phone_or_email", nullable = false, unique = true)
-    private String phoneOrEmail;
+    private String phoneorEmail;
 
     @Column(name = "display_name", nullable = false)
     private String displayName;
