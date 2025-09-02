@@ -6,6 +6,7 @@ import com.example.redmoon.exceptions.UserNotFoundInSystemException;
 import com.example.redmoon.models.User;
 import com.example.redmoon.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,6 +17,9 @@ public class AuthServiceImpl implements AuthService{
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordencoder;
+
     public User signup(String email, String password, String displayName) throws UserAlreadySignedInException{
 
         Optional<User> userOptional = userRepository.findByPhoneorEmail(email);
@@ -25,7 +29,8 @@ public class AuthServiceImpl implements AuthService{
 
         User user = new User();
         user.setPhoneorEmail(email);
-        user.setPasswordHash(password);
+//        user.setPasswordHash(password);
+        user.setPasswordHash(bCryptPasswordencoder.encode(password));
         user.setDisplayName(displayName);
         userRepository.save(user);
 
@@ -39,7 +44,8 @@ public class AuthServiceImpl implements AuthService{
         }
         User user =  userOptional.get();
         String  passwordHash = user.getPasswordHash();
-        if(!passwordHash.equals(password)) {
+//        if(!passwordHash.equals(password)) {
+        if(!bCryptPasswordencoder.matches(password, passwordHash)){
             throw new PasswordMismatchException("Incorrect password!");
         }
         return user;
