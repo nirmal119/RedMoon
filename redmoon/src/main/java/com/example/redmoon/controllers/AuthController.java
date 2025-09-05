@@ -10,6 +10,7 @@ import com.example.redmoon.models.User;
 import com.example.redmoon.services.AuthService;
 import com.example.redmoon.services.AuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,10 +35,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public UserDto login(@RequestBody LoginRequestDto loginRequestDto)  {
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto loginRequestDto)  {
         try {
-            User user = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-            return from(user);
+            ResponseEntity<User> userResponseEntity = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
+            UserDto userDto = from(userResponseEntity.getBody());
+            return new ResponseEntity<>(userDto, userResponseEntity.getHeaders(), userResponseEntity.getStatusCode());
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
