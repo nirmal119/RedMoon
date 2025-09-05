@@ -25,16 +25,19 @@ public class AuthServiceImpl implements AuthService{
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
-    UserSessionRepository userSessionRepository;
+    private UserSessionRepository userSessionRepository;
+
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordencoder;
+
     @Autowired
     private SecretKey secretKey;
 
     public User signup(String email, String password, String displayName) throws UserAlreadySignedInException{
-
         Optional<User> userOptional = userRepository.findByPhoneorEmail(email);
+
         if(userOptional.isPresent()) {
             throw new UserAlreadySignedInException("User already signed in, Please login!");
         }
@@ -43,16 +46,21 @@ public class AuthServiceImpl implements AuthService{
         user.setPhoneorEmail(email);
         user.setPasswordHash(bCryptPasswordencoder.encode(password));
         user.setDisplayName(displayName);
+
         userRepository.save(user);
 
         return user;
     }
 
-    public Pair<User,String> login(String email, String password) throws PasswordMismatchException, UserNotFoundInSystemException{
+    public Pair<User,String> login(String email, String password)
+            throws PasswordMismatchException, UserNotFoundInSystemException{
+
         Optional<User> userOptional = userRepository.findByPhoneorEmail(email);
+
         if(userOptional.isEmpty()) {
             throw new UserNotFoundInSystemException("User has not signed up.");
         }
+
         User user =  userOptional.get();
         String  passwordHash = user.getPasswordHash();
 
@@ -63,29 +71,42 @@ public class AuthServiceImpl implements AuthService{
         /* Token generation logic */
         Map<String,Object> claims = new HashMap<>();
         claims.put("userId",user.getId());
+
         Long nowInMillis = System.currentTimeMillis();
         claims.put("iat",nowInMillis); // issued at
         claims.put("exp",nowInMillis+100000);
         claims.put("iss","RedMoon"); // issuer
 
-        String token = Jwts.builder().claims(claims).signWith(secretKey).compact();
+        String token = Jwts.builder()
+                .claims(claims)
+                .signWith(secretKey)
+                .compact();
 
         /* Persisting generated token */
         UserSession userSession = new UserSession();
         userSession.setUser(user);
         userSession.setToken(token);
+
         userSessionRepository.save(userSession);
 
         return Pair.of(user,token);
     }
 
     public boolean validateToken(String token, Long userId) {
-        Optional<UserSession> optionalUserSession = userSessionRepository.findByTokenAndUser_Id(token,userId);
-        if(optionalUserSession.isEmpty()) return false;
+        Optional<UserSession> optionalUserSession =
+                userSessionRepository.findByTokenAndUser_Id(token,userId);
+
+        if(optionalUserSession.isEmpty()) {
+            return false;
+        }
+
         UserSession userSession = optionalUserSession.get();
+        String persistedToken = userSession.getToken();
 
         /* Parsing token */
-        JwtParser jwtParser = Jwts.parser().verifyWith(secretKey).build();
+        JwtParser jwtParser = Jwts.parser()
+                .verifyWith(secretKey)
+                .build();
         Claims claims = jwtParser.parseSignedClaims(token).getPayload();
         Long expiry = (Long)claims.get("exp");
         Long currentTime = System.currentTimeMillis();
