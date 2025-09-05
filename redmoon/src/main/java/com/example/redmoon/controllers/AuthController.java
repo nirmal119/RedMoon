@@ -10,11 +10,19 @@ import com.example.redmoon.models.User;
 import com.example.redmoon.services.AuthService;
 import com.example.redmoon.services.AuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -37,9 +45,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto loginRequestDto)  {
         try {
-            ResponseEntity<User> userResponseEntity = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-            UserDto userDto = from(userResponseEntity.getBody());
-            return new ResponseEntity<>(userDto, userResponseEntity.getHeaders(), userResponseEntity.getStatusCode());
+            Pair<User, String> userPair = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
+            User user = userPair.getFirst();
+            String token = userPair.getSecond();
+
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add(HttpHeaders.SET_COOKIE, token);
+
+            UserDto userDto = from(user);
+            return new ResponseEntity<>(userDto, headers, HttpStatusCode.valueOf(201));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
