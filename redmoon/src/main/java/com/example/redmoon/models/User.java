@@ -13,6 +13,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    private State state = State.ACTIVE;
+
     @Column(name = "phone_or_email", nullable = false, unique = true)
     private String phoneorEmail;
 

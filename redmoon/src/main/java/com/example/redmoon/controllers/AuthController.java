@@ -4,12 +4,9 @@ import com.example.redmoon.dtos.LoginRequestDto;
 import com.example.redmoon.dtos.SignupRequestDto;
 import com.example.redmoon.dtos.UserDto;
 import com.example.redmoon.dtos.ValidateTokenRequestDto;
-import com.example.redmoon.exceptions.PasswordMismatchException;
-import com.example.redmoon.exceptions.UserAlreadySignedInException;
-import com.example.redmoon.exceptions.UserNotFoundInSystemException;
 import com.example.redmoon.models.User;
-import com.example.redmoon.services.AuthService;
 import com.example.redmoon.services.AuthServiceImpl;
+import com.example.redmoon.utils.UserMapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpHeaders;
@@ -23,9 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -37,7 +31,7 @@ public class AuthController {
     public UserDto signup(@RequestBody SignupRequestDto signupRequestDto) {
         try {
             User user = authService.signup(signupRequestDto.getEmail(), signupRequestDto.getPassword(), signupRequestDto.getDisplayName());
-            return from(user);
+            return UserMapperUtil.userDtoFromUser(user);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
@@ -54,7 +48,7 @@ public class AuthController {
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add(HttpHeaders.SET_COOKIE, token);
 
-            UserDto userDto = from(user);
+            UserDto userDto = UserMapperUtil.userDtoFromUser(user);
             return new ResponseEntity<>(userDto, headers, HttpStatusCode.valueOf(201));
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -71,13 +65,6 @@ public class AuthController {
         } else {
             return new ResponseEntity<>("FAILURE", HttpStatus.UNAUTHORIZED);
         }
-    }
-
-    private UserDto from(User user) {
-        UserDto userDto = new UserDto();
-        userDto.setId(user.getId());
-        userDto.setEmail(user.getPhoneorEmail());
-        return userDto;
     }
 
 }
