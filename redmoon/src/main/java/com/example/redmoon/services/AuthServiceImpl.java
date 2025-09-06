@@ -94,7 +94,7 @@ public class AuthServiceImpl implements AuthService{
 
     public boolean validateToken(String token, Long userId) {
         Optional<UserSession> optionalUserSession =
-                userSessionRepository.findByTokenAndUser_Id(token,userId);
+                userSessionRepository.findByTokenAndUserId(token,userId);
 
         if(optionalUserSession.isEmpty()) {
             return false;

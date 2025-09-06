@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
 
-    Optional<UserSession> findByTokenAndUser_Id(String token,Long userId);
+    Optional<UserSession> findByTokenAndUserId(String token,Long userId);
 
 }

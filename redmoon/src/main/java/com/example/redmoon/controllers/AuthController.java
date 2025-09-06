@@ -3,6 +3,7 @@ package com.example.redmoon.controllers;
 import com.example.redmoon.dtos.LoginRequestDto;
 import com.example.redmoon.dtos.SignupRequestDto;
 import com.example.redmoon.dtos.UserDto;
+import com.example.redmoon.dtos.ValidateTokenRequestDto;
 import com.example.redmoon.exceptions.PasswordMismatchException;
 import com.example.redmoon.exceptions.UserAlreadySignedInException;
 import com.example.redmoon.exceptions.UserNotFoundInSystemException;
@@ -12,6 +13,7 @@ import com.example.redmoon.services.AuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -57,6 +59,17 @@ public class AuthController {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
+        }
+    }
+
+    @PostMapping("/validateToken")
+    public ResponseEntity<String> validateToken(@RequestBody ValidateTokenRequestDto validateTokenRequestDto) {
+        boolean result = authService.validateToken(validateTokenRequestDto.getToken(),
+                validateTokenRequestDto.getUserId());
+        if(result) {
+            return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("FAILURE", HttpStatus.UNAUTHORIZED);
         }
     }
 
